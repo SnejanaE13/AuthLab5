@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Echo Auth</title>
+  <link rel="icon" href="Logo.png" type="image/png">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .hidden {
+      display: none;
+    }
+    .error {
+      color: red;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body class="bg-[#fff7ff] min-h-screen flex flex-col">
+  <!-- Экран входа (по умолчанию видим) -->
+  <div id="login-screen" class="flex-grow flex flex-col items-center justify-start p-4">
+    <div class="w-full max-w-4xl flex justify-center mt-20 mb-10">
+      <img src="Logo.png" alt="Echo Logo" class="max-w-full h-auto">
+    </div>
+
+    <!-- Форма входа -->
+    <form class="w-full max-w-md space-y-6" onsubmit="return validateLoginForm()">
+      <div class="flex flex-col">
+        <label for="email" class="text-xs text-[#7a7a7a] mb-1">Почта</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="Например: test@test.test"
+          class="rounded-lg border border-gray-400 bg-[#fff7ff] px-4 py-3 text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e600ff] hover:border-[#e600ff] transition-colors"
+        />
+        <div id="login-email-error" class="error hidden"></div>
+      </div>
+
+      <div class="flex flex-col relative">
+        <label for="password" class="text-xs text-[#7a7a7a] mb-1">Пароль</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Введите пароль"
+          class="rounded-lg border border-gray-400 bg-[#fff7ff] px-4 py-3 pr-10 text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#e600ff] hover:border-[#e600ff] transition-colors"
+        />
+        <span class="absolute right-3 top-9 text-gray-600 cursor-pointer hover:text-[#e600ff]">
+          <i class="fas fa-eye toggle-password"></i>
+        </span>
+        <div id="login-password-error" class="error hidden"></div>
+      </div>
+
+      <div class="text-center text-xs text-[#7a7a7a] hover:text-[#4b3db9]">
+        <a href="#" class="hover:underline">Забыли пароль?</a>
+      </div>
+      <div class="text-center text-xs text-[#7a7a7a] mb-4">
+        Нет аккаунта? 
+        <a href="#" class="text-[#4b3db9] font-semibold hover:underline" onclick="showRegistrationScreen()">Зарегистрируйтесь</a>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-[#1e90f0] text-white rounded-lg py-3 text-center text-sm font-medium hover:bg-[#0d7bd4] transition-colors"
+      >
+        Войти
+      </button>
+    </form>
+  </div>
+
+  <!-- Экран регистрации (изначально скрыт) -->
+  <div id="registration-screen" class="hidden flex-grow flex flex-col items-center px-4 pt-24">
+    <header class="fixed top-0 left-0 p-4 z-10">
+      <button aria-label="Назад" class="text-black text-xl" onclick="showLoginScreen()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+    </header>
+
+    <h1 class="mb-8">
+      <img src="Logo.png" alt="Echo Logo" class="max-w-full h-auto">
+    </h1>
+
+    <form class="w-full max-w-md space-y-4" onsubmit="return validateRegistrationForm()">
+      <div class="flex flex-col">
+        <label for="reg-email" class="text-[10px] text-gray-400 mb-1">Почта</label>
+        <input
+          id="reg-email"
+          type="email"
+          placeholder="Например: test@test.test"
+          class="rounded-lg border border-gray-400 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#ff00ff] bg-[#fff7ff]"
+        />
+        <div id="reg-email-error" class="error hidden"></div>
+      </div>
+
+      <div class="flex flex-col">
+        <label for="name" class="text-[10px] text-gray-400 mb-1">Имя</label>
+        <input
+          id="name"
+          type="text"
+          placeholder="Введите ваше имя или никнейм"
+          class="rounded-lg border border-gray-400 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#ff00ff] bg-[#fff7ff]"
+        />
+        <div id="name-error" class="error hidden"></div>
+      </div>
+
+      <div class="flex flex-col relative">
+        <label for="reg-password" class="text-[10px] text-gray-400 mb-1">Пароль</label>
+        <input
+          id="reg-password"
+          type="password"
+          placeholder="Введите пароль"
+          class="rounded-lg border border-gray-400 px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#ff00ff] bg-[#fff7ff]"
+        />
+        <button
+          type="button"
+          class="absolute right-3 top-9 text-gray-700"
+          aria-label="Показать пароль"
+          tabindex="-1"
+        >
+          <i class="fas fa-eye toggle-password"></i>
+        </button>
+        <div id="reg-password-error" class="error hidden"></div>
+        <div class="text-xs text-gray-500 mt-1">Минимум 1 заглавная и 1 строчная английская буква</div>
+      </div>
+
+      <div class="flex flex-col relative">
+        <label for="password-confirm" class="text-[10px] text-gray-400 mb-1">Подтвердите пароль</label>
+        <input
+          id="password-confirm"
+          type="password"
+          placeholder="Введите пароль"
+          class="rounded-lg border border-gray-400 px-4 py-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#ff00ff] bg-[#fff7ff]"
+        />
+        <button
+          type="button"
+          class="absolute right-3 top-9 text-gray-700"
+          aria-label="Показать пароль"
+          tabindex="-1"
+        >
+          <i class="fas fa-eye toggle-password"></i>
+        </button>
+        <div id="confirm-password-error" class="error hidden"></div>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-[#1e90ff] text-black py-3 rounded-lg text-center"
+      >
+        Регистрация
+      </button>
+    </form>
+
+    <footer class="text-center text-[10px] text-gray-500 p-2 mt-4">
+      Нажимая зарегистрироваться, вы соглашаетесь с условиями и политикой конфиденциальности
+    </footer>
+  </div>
+
+  <!-- Экран загрузки (изначально скрыт) -->
+  <div id="loader-screen" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#fff7ff]">
+    <div class="text-center">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#e600ff] mb-4"></div>
+      <p class="text-lg text-gray-700">Пожалуйста, подождите...</p>
+      <p class="text-sm text-gray-500" id="loader-message">Регистрация аккаунта</p>
+    </div>
+  </div>
+
+  <!-- Модальное окно для ошибок сервера -->
+  <div id="server-error-modal" class="hidden fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-red-600">Ошибка сервера</h3>
+        <button onclick="closeServerErrorModal()" class="text-gray-600 hover:text-gray-800">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-4">
+        <p id="server-error-message" class="text-gray-700">Произошла непредвиденная ошибка. Попробуйте позже.</p>
+      </div>
+      <div class="flex justify-end">
+        <button onclick="closeServerErrorModal()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+          Закрыть
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Уведомления -->
+  <div id="notification" class="hidden fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-xs z-50">
+    <p id="notification-message" class="text-white"></p>
+  </div>
+
+  <script>
+    // Имитация хранилища пользователей
+    const userStorage = {
+      users: JSON.parse(localStorage.getItem('echoUsers')) || [
+        // Предустановленный пользователь для демонстрации
+        { email: 'demo@example.com', name: 'DemoUser', password: 'Demo123' }
+      ],
+      
+      // Сохранить пользователей в localStorage
+      saveUsers: function() {
+        localStorage.setItem('echoUsers', JSON.stringify(this.users));
+      },
+      
+      // Проверить существование пользователя по email
+      userExists: function(email) {
+        return this.users.some(user => user.email.toLowerCase() === email.toLowerCase());
+      },
+      
+      // Проверить существование пользователя по имени
+      nameExists: function(name) {
+        return this.users.some(user => user.name.toLowerCase() === name.toLowerCase());
+      },
+      
+      // Добавить нового пользователя
+      addUser: function(email, name, password) {
+        if (!this.userExists(email)) {
+          this.users.push({ email, name, password });
+          this.saveUsers();
+          return true;
+        }
+        return false;
+      },
+      
+      // Проверить авторизационные данные
+      validateLogin: function(email, password) {
+        const user = this.users.find(user => user.email.toLowerCase() === email.toLowerCase());
+        if (user && user.password === password) {
+          return { success: true, user };
+        }
+        return { success: false, reason: user ? 'invalid_password' : 'user_not_found' };
+      }
+    };
+    // Обработка ошибок сервера и уведомлений
+    function showServerErrorModal(message) {
+      document.getElementById('server-error-message').textContent = message || 'Произошла непредвиденная ошибка. Попробуйте позже.';
+      document.getElementById('server-error-modal').classList.remove('hidden');
+    }
+    
+    function closeServerErrorModal() {
+      document.getElementById('server-error-modal').classList.add('hidden');
+    }
+    
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      const notificationMessage = document.getElementById('notification-message');
+      
+      // Установка стиля в зависимости от типа уведомления
+      notification.className = 'fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-xs z-50';
+      
+      if (type === 'success') {
+        notification.classList.add('bg-green-500');
+      } else if (type === 'error') {
+        notification.classList.add('bg-red-500');
+      } else {
+        notification.classList.add('bg-blue-500');
+      }
+      
+      notificationMessage.textContent = message;
+      notification.classList.remove('hidden');
+      
+      // Скрыть уведомление через 3 секунды
+      setTimeout(() => {
+        notification.classList.add('hidden');
+      }, 3000);
+    }
+
+    function showRegistrationScreen() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('registration-screen').classList.remove('hidden');
+    }
+
+    function showLoginScreen() {
+      document.getElementById('registration-screen').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+    
+    function showLoaderScreen(message = "Пожалуйста, подождите") {
+      document.getElementById('loader-message').textContent = message;
+      document.getElementById('loader-screen').classList.remove('hidden');
+    }
+    
+    function hideLoaderScreen() {
+      document.getElementById('loader-screen').classList.add('hidden');
+    }
+
+    function validateEmail(email) {
+      // Проверка на формат email: имя@домен.окончание
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    function validatePassword(password) {
+      // Проверка наличия хотя бы одной маленькой буквы
+      const hasLowerCase = /[a-z]/.test(password);
+      
+      // Проверка наличия хотя бы одной большой буквы
+      const hasUpperCase = /[A-Z]/.test(password);
+      
+      // Проверка что пароль содержит только английские буквы и цифры
+      const isEnglishOnly = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/.test(password);
+      
+      return hasLowerCase && hasUpperCase && isEnglishOnly;
+    }
+
+    function validateLoginForm() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      let isValid = true;
+
+      // Сброс ошибок
+      document.getElementById('login-email-error').classList.add('hidden');
+      document.getElementById('login-password-error').classList.add('hidden');
+
+      // Проверка на пустые поля
+      if (!email) {
+        document.getElementById('login-email-error').innerText = "Почта не может быть пустой.";
+        document.getElementById('login-email-error').classList.remove('hidden');
+        isValid = false;
+      } else if (!validateEmail(email)) {
+        document.getElementById('login-email-error').innerText = "Неверный формат почты. Пример: user@example.com";
+        document.getElementById('login-email-error').classList.remove('hidden');
+        isValid = false;
+      }
+      
+      if (!password) {
+        document.getElementById('login-password-error').innerText = "Пароль не может быть пустым.";
+        document.getElementById('login-password-error').classList.remove('hidden');
+        isValid = false;
+      }
+
+      // Для демонстрационных целей: показываем лоадер при успешной валидации формы
+      if (isValid) {
+        showLoaderScreen("Выполняется вход...");
+        
+        // Имитация процесса входа с проверкой учетных данных
+        setTimeout(function() {
+          const loginResult = userStorage.validateLogin(email, password);
+          hideLoaderScreen();
+          
+          if (loginResult.success) {
+            // В реальном приложении здесь был бы редирект на основной экран приложения
+            showNotification(`Добро пожаловать, ${loginResult.user.name}!`, "success");
+          } else {
+            if (loginResult.reason === 'user_not_found') {
+              document.getElementById('login-email-error').innerText = "Пользователь с такой почтой не найден.";
+              document.getElementById('login-email-error').classList.remove('hidden');
+            } else if (loginResult.reason === 'invalid_password') {
+              document.getElementById('login-password-error').innerText = "Неверный пароль.";
+              document.getElementById('login-password-error').classList.remove('hidden');
+            }
+          }
+        }, 1500);
+      }
+
+      return false; // Предотвращаем отправку формы
+    }
+
+    function validateRegistrationForm() {
+      const email = document.getElementById('reg-email').value;
+      const name = document.getElementById('name').value;
+      const password = document.getElementById('reg-password').value;
+      const passwordConfirm = document.getElementById('password-confirm').value;
+      let isValid = true;
+
+      // Сброс ошибок
+      document.getElementById('reg-email-error').classList.add('hidden');
+      document.getElementById('name-error').classList.add('hidden');
+      document.getElementById('reg-password-error').classList.add('hidden');
+      document.getElementById('confirm-password-error').classList.add('hidden');
+
+      // Проверка на пустые поля
+      if (!email) {
+        document.getElementById('reg-email-error').innerText = "Почта не может быть пустой.";
+        document.getElementById('reg-email-error').classList.remove('hidden');
+        isValid = false;
+      } else if (!validateEmail(email)) {
+        document.getElementById('reg-email-error').innerText = "Неверный формат почты. Пример: user@example.com";
+        document.getElementById('reg-email-error').classList.remove('hidden');
+        isValid = false;
+      } else if (userStorage.userExists(email)) {
+        document.getElementById('reg-email-error').innerText = "Пользователь с такой почтой уже существует.";
+        document.getElementById('reg-email-error').classList.remove('hidden');
+        isValid = false;
+      }
+      
+      if (!name) {
+        document.getElementById('name-error').innerText = "Имя не может быть пустым.";
+        document.getElementById('name-error').classList.remove('hidden');
+        isValid = false;
+      } else if (name.length < 3) {
+        document.getElementById('name-error').innerText = "Имя должно содержать минимум 3 символа.";
+        document.getElementById('name-error').classList.remove('hidden');
+        isValid = false;
+      } else if (userStorage.nameExists(name)) {
+        document.getElementById('name-error').innerText = "Это имя уже занято. Выберите другое.";
+        document.getElementById('name-error').classList.remove('hidden');
+        isValid = false;
+      }
+      
+      if (!password) {
+        document.getElementById('reg-password-error').innerText = "Пароль не может быть пустым.";
+        document.getElementById('reg-password-error').classList.remove('hidden');
+        isValid = false;
+      } else if (password.length < 6) {
+        document.getElementById('reg-password-error').innerText = "Пароль должен содержать минимум 6 символов.";
+        document.getElementById('reg-password-error').classList.remove('hidden');
+        isValid = false;
+      } else if (!validatePassword(password)) {
+        document.getElementById('reg-password-error').innerText = "Пароль должен содержать минимум 1 строчную и 1 заглавную английскую букву.";
+        document.getElementById('reg-password-error').classList.remove('hidden');
+        isValid = false;
+      }
+      
+      if (password !== passwordConfirm) {
+        document.getElementById('confirm-password-error').innerText = "Пароли не совпадают.";
+        document.getElementById('confirm-password-error').classList.remove('hidden');
+        isValid = false;
+      }
+
+      // Если форма валидна, показываем лоадер и имитируем процесс регистрации
+      if (isValid) {
+        showLoaderScreen("Регистрация аккаунта");
+        
+        // Имитация запроса к серверу с возможностью случайной ошибки
+        setTimeout(function() {
+          // Генерация случайного числа для имитации ошибки сервера (в 10% случаев)
+          const serverError = Math.random() < 0.1;
+          
+          if (serverError) {
+            hideLoaderScreen();
+            showServerErrorModal("Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.");
+          } else {
+            // Добавляем пользователя в хранилище
+            userStorage.addUser(email, name, password);
+            hideLoaderScreen();
+            // Переход на экран входа после "успешной" регистрации
+            showLoginScreen();
+            // Показываем уведомление об успешной регистрации
+            showNotification("Регистрация успешно завершена! Пожалуйста, войдите в свой аккаунт.", "success");
+          }
+        }, 2000); // Задержка в 2 секунды для демонстрации лоадера
+      }
+
+      return false; // Предотвращаем отправку формы, так как мы обрабатываем всё через JavaScript
+    }
+
+    // Переключение видимости пароля
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', function() {
+          const passwordInput = this.closest('div').querySelector('input');
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          
+          // Изменение иконки
+          this.classList.toggle('fa-eye');
+          this.classList.toggle('fa-eye-slash');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
